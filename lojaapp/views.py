@@ -22,6 +22,9 @@ class AddCarroViewCategoria(TemplateView):
         categorias_unicas = list(set(produto.categoria for produto in Produto.objects.all().order_by("-id")))
         context['lista_produtos'] = Produto.objects.all().order_by("-id")
         context['lista_categorias'] = categorias_unicas
+
+
+
         produto_id = self.kwargs['pro_id']
         produto_obj = Produto.objects.get(id=produto_id)
         carro_id = self.request.session.get("carro_id", None)
@@ -58,27 +61,42 @@ class AddCarroViewCategoria(TemplateView):
         return context
 
 
+
 class TodosProdutosView(TemplateView):
     template_name = "categorias.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # Obtém a categoria selecionada do filtro, se houver
+        categoria_selecionada = self.request.GET.get('categoria', None)
+        print("Categoria Selecionada:", categoria_selecionada)
+
         # Obtém todas as categorias únicas ordenadas por id
         categorias_unicas = list(set(produto.categoria for produto in Produto.objects.all().order_by("-id")))
 
-        # Obtém todos os produtos ordenados por id
+        # Inicializa um dicionário para armazenar o total de produtos por categoria
+        total_produtos_por_categoria = {}
+
+        # Obtém todos os produtos
         lista_produtos = Produto.objects.all().order_by("-id")
 
-        # Adiciona a lista de produtos e categorias ao contexto
+        # Se uma categoria foi selecionada no filtro, filtra a lista de produtos
+        if categoria_selecionada:
+            lista_produtos_filtrados = lista_produtos.filter(categoria__titulo=categoria_selecionada)
+            total_produtos_por_categoria[categoria_selecionada] = lista_produtos_filtrados.count()
+        else:
+            # Caso contrário, obtém a contagem para todas as categorias
+            for categoria in categorias_unicas:
+                produtos_por_categoria = lista_produtos.filter(categoria__titulo=categoria.titulo)
+                total_produtos_por_categoria[categoria.titulo] = produtos_por_categoria.count()
+
+        # Adiciona a lista de produtos, categorias e o total de produtos por categoria ao contexto
         context['lista_produtos'] = lista_produtos
         context['lista_categorias'] = categorias_unicas
-
-        # Adiciona o total de produtos ao contexto
-        context['total_produtos'] = lista_produtos.count()
+        context['total_produtos_por_categoria'] = total_produtos_por_categoria
 
         return context
-
 
 
 

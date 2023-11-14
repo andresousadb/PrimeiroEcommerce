@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
- {% load static %}
+{% load static %}
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -108,13 +108,9 @@
                     {% endfor %}
                 </div>
             </div>
-
-
-
             <div id="product-list">
                 <div class="store-filter clearfix">
                     <div id="store" class="col-md-9">
-
                         <div class="row">
                             {% for l in lista_produtos %}
                             <div class="col-md-4 category-{{ l.categoria }} product-item"
@@ -140,7 +136,17 @@
                             {% endfor %}
                         </div>
 
-                        <span class="store-qty">Mostrando 1 - {{total_produtos}} produtos</span>
+
+                        <span class="store-qty">
+                    Mostrando 1 - {% if categoria_selecionada %}
+                    <p>Categoria Selecionada: {{ categoria_selecionada }}</p>
+                {% else %}
+                    <p>Nenhuma categoria selecionada</p>
+                {% endif %}
+
+                            </span>
+
+
                         <ul class="store-pagination">
                             <li class="active">1</li>
                             <li><a href="#">2</a></li>
@@ -151,19 +157,9 @@
                     </div>
                 </div>
             </div>
-
-
-
-
-
-
-
-
         </div>
     </div>
 </div>
-
-
 
 
 <!-- FOOTER -->
