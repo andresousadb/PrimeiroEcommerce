@@ -1,6 +1,6 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+ {% load static %}
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -21,11 +21,11 @@
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+
     <![endif]-->
 </head>
 <body>
+
 <!-- HEADER -->
 <header>
     <!-- TOP HEADER -->
@@ -64,8 +64,7 @@
         <!-- row -->
     </div>
     <!-- container -->
-    </div>
-    <!-- /MAIN HEADER -->
+
 </header>
 <!-- /HEADER -->
 <!-- BREADCRUMB -->
@@ -88,124 +87,85 @@
     <!-- /container -->
 </div>
 <!-- /BREADCRUMB -->
-<!-- SECTION -->
+
+
 <div class="section">
-    <!-- container -->
     <div class="container">
-        <!-- row -->
         <div class="row">
-            <!-- ASIDE -->
             <div id="aside" class="col-md-3">
-                <!-- aside Widget -->
                 <div class="aside">
-                    <h3 class="aside-title">Categories</h3>
+                    <h3 class="aside-title">Categorias</h3>
+                    {% for categoria in lista_categorias %}
                     <div class="checkbox-filter">
                         <div class="input-checkbox">
-                            <input type="checkbox" id="category-1">
-                            <label for="category-1">
+                            <input type="checkbox" id="category-{{ forloop.counter }}" data-category="{{ categoria }}">
+                            <label for="category-{{ forloop.counter }}">
                                 <span></span>
-                                Laptops
-                                <small>(120)</small>
-                            </label>
-                        </div>
-                        <div class="input-checkbox">
-                            <input type="checkbox" id="category-2">
-                            <label for="category-2">
-                                <span></span>
-                                Smartphones
-                                <small>(740)</small>
-                            </label>
-                        </div>
-                        <div class="input-checkbox">
-                            <input type="checkbox" id="category-3">
-                            <label for="category-3">
-                                <span></span>
-                                Cameras
-                                <small>(1450)</small>
-                            </label>
-                        </div>
-                        <div class="input-checkbox">
-                            <input type="checkbox" id="category-4">
-                            <label for="category-4">
-                                <span></span>
-                                Accessories
-                                <small>(578)</small>
-                            </label>
-                        </div>
-                        <div class="input-checkbox">
-                            <input type="checkbox" id="category-5">
-                            <label for="category-5">
-                                <span></span>
-                                Laptops
-                                <small>(120)</small>
-                            </label>
-                        </div>
-                        <div class="input-checkbox">
-                            <input type="checkbox" id="category-6">
-                            <label for="category-6">
-                                <span></span>
-                                Smartphones
-                                <small>(740)</small>
+                                {{ categoria }}
                             </label>
                         </div>
                     </div>
-                </div>
-            </div>
-
-
-            <!-- STORE -->
-            <div id="store" class="col-md-9">
-                <!-- store products -->
-                <div class="row">
-                    {% for l in lista_categorias %}
-                    <!-- product -->
-                    <div class="col-md-4 col-xs-6">
-                        <div class="product">
-                            <div class="product-img">
-                                <img src="{{ l.imagem.url }}" alt="" class="img_fluid" width="100px">
-                            </div>
-                            <div class="product-body">
-                                <p class="product-category">{{ l.categoria }}</p>
-                                <h3 class="product-name"><a href="#">{{ l.titulo }}</a></h3>
-                                <h4 class="product-price">${{ l.preco }}
-                                    <del class="product-old-price">${{ l.venda }}</del>
-                                </h4>
-                            </div>
-                            <div class="add-to-cart">
-
-                                <button class="add-to-cart-btn"><i class="fa fa-shopping-cart"></i> add to cart</button>
-
-                            </div>
-                        </div>
-                    </div>
-                    <!-- /Product thumb imgs -->
                     {% endfor %}
                 </div>
             </div>
-            <!-- store bottom filter -->
+
+
+
             <div id="product-list">
                 <div class="store-filter clearfix">
-                    <span class="store-qty">Showing 20-100 products</span>
-                    <ul class="store-pagination">
-                        <li class="active">1</li>
-                        <li><a href="#">2</a></li>
-                        <li><a href="#">3</a></li>
-                        <li><a href="#">4</a></li>
-                        <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
-                    </ul>
+                    <div id="store" class="col-md-9">
+
+                        <div class="row">
+                            {% for l in lista_produtos %}
+                            <div class="col-md-4 category-{{ l.categoria }} product-item"
+                                 data-category="{{ l.categoria }}">
+                                <div class="product">
+                                    <div class="product-img">
+                                        <img src="{{ l.imagem.url }}" alt="" class="img_fluid" width="100px">
+                                    </div>
+                                    <div class="product-body">
+                                        <h3 class="product-name"><a href="#">{{ l.titulo }}</a></h3>
+                                        <h4 class="product-price">${{ l.preco }}
+                                            <del class="product-old-price">${{ l.venda }}</del>
+                                        </h4>
+                                    </div>
+                                    <div class="add-to-cart">
+                                        <button class="add-to-cart-btn"
+                                                onclick="window.location.href = '/addcarrocat/{{ l.id }}';">
+                                            <i class="fa fa-shopping-cart"></i>carrinho
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <span class="store-qty">Mostrando 1 - {{total_produtos}} produtos</span>
+                        <ul class="store-pagination">
+                            <li class="active">1</li>
+                            <li><a href="#">2</a></li>
+                            <li><a href="#">3</a></li>
+                            <li><a href="#">4</a></li>
+                            <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <!-- /store bottom filter -->
+
+
+
+
+
+
+
+
         </div>
-        <!-- /STORE -->
-
-
     </div>
-    <!-- /row -->
 </div>
-<!-- /container -->
-</div>
-<!-- /SECTION -->
+
+
+
+
 <!-- FOOTER -->
 <footer id="footer">
     <!-- top footer -->
@@ -261,6 +221,7 @@
 </footer>
 <!-- /FOOTER -->
 <!-- jQuery Plugins -->
+<script src="{% static 'js/ListaProdutos.js' %}"></script>
 <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'js/bootstrap.min.js' %}"></script>
 <script src="{% static 'js/slick.min.js' %}"></script>

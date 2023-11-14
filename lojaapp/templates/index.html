@@ -123,8 +123,8 @@
                                     </div>
                                     <div class="add-to-cart">
                                         <button class="add-to-cart-btn"
-                                                onclick="window.location.href = '{% url 'lojaapp:addcarro' p.id %}';"><i
-                                                class="fa fa-shopping-cart"></i>carrinho
+                                                onclick="window.location.href = '/addcarro/{{ p.id }}';">
+                                            <i class="fa fa-shopping-cart"></i>carrinho
                                         </button>
                                     </div>
                                 </div>
@@ -202,42 +202,42 @@
 
 <script>
     function atualizarContador() {
-      var dias = parseInt(document.getElementById("dias-contador").textContent, 10) || 0;
-      var horas = parseInt(document.getElementById("horas-contador").textContent, 10) || 0;
-      var minutos = parseInt(document.getElementById("minutos-contador").textContent, 10) || 0;
+        var dias = parseInt(document.getElementById("dias-contador").textContent, 10) || 0;
+        var horas = parseInt(document.getElementById("horas-contador").textContent, 10) || 0;
+        var minutos = parseInt(document.getElementById("minutos-contador").textContent, 10) || 0;
 
-      var dataFinal = new Date();
-      dataFinal.setDate(dataFinal.getDate() + dias);
-      dataFinal.setHours(dataFinal.getHours() + horas);
-      dataFinal.setMinutes(dataFinal.getMinutes() + minutos);
-      dataFinal.setSeconds(0);
+        var dataFinal = new Date();
+        dataFinal.setDate(dataFinal.getDate() + dias);
+        dataFinal.setHours(dataFinal.getHours() + horas);
+        dataFinal.setMinutes(dataFinal.getMinutes() + minutos);
+        dataFinal.setSeconds(0);
 
-      function calcularDiferenca() {
-        var agora = new Date();
-        var diferenca = dataFinal - agora;
+        function calcularDiferenca() {
+            var agora = new Date();
+            var diferenca = dataFinal - agora;
 
-        var diasRestantes = Math.floor(diferenca / (1000 * 60 * 60 * 24));
-        var horasRestantes = Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        var minutosRestantes = Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60));
-        var segundosRestantes = Math.floor((diferenca % (1000 * 60)) / 1000);
+            var diasRestantes = Math.floor(diferenca / (1000 * 60 * 60 * 24));
+            var horasRestantes = Math.floor((diferenca % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            var minutosRestantes = Math.floor((diferenca % (1000 * 60 * 60)) / (1000 * 60));
+            var segundosRestantes = Math.floor((diferenca % (1000 * 60)) / 1000);
 
-        document.getElementById("dias-contador").innerHTML = diasRestantes;
-        document.getElementById("horas-contador").innerHTML = horasRestantes;
-        document.getElementById("minutos-contador").innerHTML = minutosRestantes;
-        document.getElementById("segundos-contador").innerHTML = segundosRestantes;
+            document.getElementById("dias-contador").innerHTML = diasRestantes;
+            document.getElementById("horas-contador").innerHTML = horasRestantes;
+            document.getElementById("minutos-contador").innerHTML = minutosRestantes;
+            document.getElementById("segundos-contador").innerHTML = segundosRestantes;
 
-        if (diferenca <= 0) {
-          clearInterval(contadorInterval);
-          document.getElementById("dias-contador").innerHTML = "0";
-          document.getElementById("horas-contador").innerHTML = "0";
-          document.getElementById("minutos-contador").innerHTML = "0";
-          document.getElementById("segundos-contador").innerHTML = "0";
+            if (diferenca <= 0) {
+                clearInterval(contadorInterval);
+                document.getElementById("dias-contador").innerHTML = "0";
+                document.getElementById("horas-contador").innerHTML = "0";
+                document.getElementById("minutos-contador").innerHTML = "0";
+                document.getElementById("segundos-contador").innerHTML = "0";
+            }
         }
-      }
 
-      calcularDiferenca();
+        calcularDiferenca();
 
-      var contadorInterval = setInterval(calcularDiferenca, 1000);
+        var contadorInterval = setInterval(calcularDiferenca, 1000);
     }
 
     // Inicie o contador imediatamente

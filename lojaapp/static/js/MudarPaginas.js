@@ -1,35 +1,48 @@
-const productsPerPage = 2; // Número de produtos por página
-let currentPage = 1; // Página atual
+const produtosPorPagina = 6; // Número de produtos por página
+let paginaAtual = 1; // Página atual
+
+// ...
 
 // Função para exibir produtos com base na página atual
-function displayProducts() {
-   const productList = document.getElementById('product-list');
-   productList.innerHTML = ''; // Limpa a lista de produtos
+function exibirProdutos() {
+    const listaProdutos = document.getElementById('store');
+    listaProdutos.innerHTML = ''; // Limpa a lista de produtos
 
-   const startIndex = (currentPage - 1) * productsPerPage;
-   const endIndex = startIndex + productsPerPage;
+    console.log("startIndex:", (paginaAtual - 1) * produtosPorPagina);
+    console.log("endIndex:", startIndex + produtosPorPagina);
 
-   for (let i = startIndex; i < endIndex && i < listaProduto.length; i++) {
-      const produto = listaProduto[i];
-      // Crie os elementos HTML para exibir os produtos, por exemplo, divs, imagens, títulos, preços, etc., e adicione-os a productList.
-   }
+    for (let i = startIndex; i < endIndex && i < lista_produtos.length; i++) {
+        const produto = lista_produtos[i];
+
+        console.log("Exibindo produto:", produto);
+
+        // Restante do código para criar elementos HTML
+    }
 }
+
+// ...
+
 
 // Atualize a paginação para refletir o número de páginas com base na quantidade de produtos
-const totalPages = Math.ceil(listaProduto.length / productsPerPage);
-const storePagination = document.querySelector('.store-pagination');
-storePagination.innerHTML = '';
+const totalPaginas = Math.ceil(lista_produtos.length / produtosPorPagina);
+const paginacao = document.querySelector('.store-pagination');
+paginacao.innerHTML = '';
 
-for (let page = 1; page <= totalPages; page++) {
-   const pageItem = document.createElement('li');
-   pageItem.textContent = page;
-   if (page === currentPage) {
-      pageItem.classList.add('active');
-   } else {
-      pageItem.addEventListener('click', function () {
-         currentPage = page;
-         displayProducts();
-      });
-   }
-   storePagination.appendChild(pageItem);
+const pages = Array.from({ length: totalPaginas }, (_, index) => index + 1);
+
+for (const page of pages) {
+    const itemPagina = document.createElement('li');
+    itemPagina.innerHTML = `<a href="?page=${page}">${page}</a>`;
+    if (page === paginaAtual) {
+        itemPagina.classList.add('active');
+    } else {
+        itemPagina.addEventListener('click', function () {
+            paginaAtual = page;
+            exibirProdutos();
+        });
+    }
+    paginacao.appendChild(itemPagina);
 }
+
+// Exiba os produtos iniciais
+exibirProdutos();
