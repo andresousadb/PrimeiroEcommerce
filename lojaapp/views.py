@@ -1,31 +1,34 @@
-from django.shortcuts import redirect, render
+from django.core.paginator import Paginator, EmptyPage
+from django.shortcuts import redirect, get_object_or_404
 from django.views.generic import View, TemplateView
 from .models import *
 
 
 # Create your views here.
 
+
 class Homeview(TemplateView):
     template_name = "index.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['lista_produto'] = Produto.objects.all().order_by("-id")
-        context['lista_promocao'] = Promocao.objects.all().order_by("-id")
+        context["lista_produto"] = Produto.objects.all().order_by("-id")
+        context["lista_promocao"] = Promocao.objects.all().order_by("-id")
         return context
 
 
 class AddCarroViewCategoria(TemplateView):
     template_name = "categorias.html"
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        categorias_unicas = list(set(produto.categoria for produto in Produto.objects.all().order_by("-id")))
-        context['lista_produtos'] = Produto.objects.all().order_by("-id")
-        context['lista_categorias'] = categorias_unicas
+        categorias_unicas = list(
+            set(produto.categoria for produto in Produto.objects.all().order_by("-id"))
+        )
+        context["lista_produtos"] = Produto.objects.all().order_by("-id")
+        context["lista_categorias"] = categorias_unicas
 
-
-
-        produto_id = self.kwargs['pro_id']
+        produto_id = self.kwargs["pro_id"]
         produto_obj = Produto.objects.get(id=produto_id)
         carro_id = self.request.session.get("carro_id", None)
 
@@ -39,12 +42,18 @@ class AddCarroViewCategoria(TemplateView):
                 carroproduto.subtotal += produto_obj.venda
                 carroproduto.save()
             else:
-                carroproduto = CarroProduto.objects.create(carro=carro_obj, produto=produto_obj,
-                                                           avaliacao=produto_obj.venda, quantidade=1,
-                                                           subtotal=produto_obj.venda)
+                carroproduto = CarroProduto.objects.create(
+                    carro=carro_obj,
+                    produto=produto_obj,
+                    avaliacao=produto_obj.venda,
+                    quantidade=1,
+                    subtotal=produto_obj.venda,
+                )
 
             # Atualize o campo "total" no objeto "Carro"
-            carro_obj.total = sum(item.subtotal for item in carro_obj.carroproduto_set.all())
+            carro_obj.total = sum(
+                item.subtotal for item in carro_obj.carroproduto_set.all()
+            )
             if carro_obj.total < 0:
                 carro_obj.total = 0
 
@@ -52,53 +61,81 @@ class AddCarroViewCategoria(TemplateView):
 
         else:
             carro_obj = Carro.objects.create(total=produto_obj.venda)
-            self.request.session['carro_id'] = carro_obj.id
-            carroproduto = CarroProduto.objects.create(carro=carro_obj, produto=produto_obj,
-                                                       avaliacao=produto_obj.venda, quantidade=1,
-                                                       subtotal=produto_obj.venda)
+            self.request.session["carro_id"] = carro_obj.id
+            carroproduto = CarroProduto.objects.create(
+                carro=carro_obj,
+                produto=produto_obj,
+                avaliacao=produto_obj.venda,
+                quantidade=1,
+                subtotal=produto_obj.venda,
+            )
             carro_obj.save()
 
         return context
 
 
-
 class TodosProdutosView(TemplateView):
     template_name = "categorias.html"
+    produtos_por_pagina = 5
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Obtém a categoria selecionada do filtro, se houver
-        categoria_selecionada = self.request.GET.get('categoria', None)
-        print("Categoria Selecionada:", categoria_selecionada)
+        categorias_filtradas = self.request.GET.get("categoria")
+        categorias_unicas = list(
+            set(
+                produto.categoria.titulo
+                for produto in Produto.objects.all().order_by("-id")
+            )
+        )
 
-        # Obtém todas as categorias únicas ordenadas por id
-        categorias_unicas = list(set(produto.categoria for produto in Produto.objects.all().order_by("-id")))
-
-        # Inicializa um dicionário para armazenar o total de produtos por categoria
-        total_produtos_por_categoria = {}
-
-        # Obtém todos os produtos
         lista_produtos = Produto.objects.all().order_by("-id")
 
-        # Se uma categoria foi selecionada no filtro, filtra a lista de produtos
-        if categoria_selecionada:
-            lista_produtos_filtrados = lista_produtos.filter(categoria__titulo=categoria_selecionada)
-            total_produtos_por_categoria[categoria_selecionada] = lista_produtos_filtrados.count()
-        else:
-            # Caso contrário, obtém a contagem para todas as categorias
-            for categoria in categorias_unicas:
-                produtos_por_categoria = lista_produtos.filter(categoria__titulo=categoria.titulo)
-                total_produtos_por_categoria[categoria.titulo] = produtos_por_categoria.count()
+        if categorias_filtradas:
+            categorias_filtradas = categorias_filtradas.split(
+                ","
+            )  # Divide as categorias por vírgula
+            categoria_objs = Categoria.objects.filter(titulo__in=categorias_filtradas)
+            lista_produtos = lista_produtos.filter(
+                categoria__in=categoria_objs
+            ).order_by("-id")
 
-        # Adiciona a lista de produtos, categorias e o total de produtos por categoria ao contexto
-        context['lista_produtos'] = lista_produtos
-        context['lista_categorias'] = categorias_unicas
-        context['total_produtos_por_categoria'] = total_produtos_por_categoria
+        paginator = Paginator(lista_produtos, self.produtos_por_pagina)
+        page = self.request.GET.get("page", 1)
+
+        try:
+            produtos_paginados = paginator.page(page)
+        except EmptyPage:
+            produtos_paginados = paginator.page(1)
+
+        context["lista_produtos"] = produtos_paginados
+        context["lista_categorias"] = categorias_unicas
+        context["categorias_filtradas"] = categorias_filtradas
+        context["total_produtos"] = lista_produtos.count()
+
+        # Adiciona o parâmetro de filtro à URL da próxima página
+        base_url = (
+            f"?categoria={'&categoria='.join(categorias_filtradas)}"
+            if categorias_filtradas
+            else ""
+        )
+        next_page_number = (
+            produtos_paginados.next_page_number()
+            if produtos_paginados.has_next()
+            else None
+        )
+
+        # Verifica se há produtos suficientes para preencher a próxima página
+        if (
+            next_page_number
+            and (produtos_paginados.number * self.produtos_por_pagina)
+            < lista_produtos.count()
+        ):
+            context["next_page_url"] = f"{base_url}&page={next_page_number}"
+        else:
+            context["next_page_url"] = None
 
         return context
-
-
 
 
 class ProdutoDetalheView(TemplateView):
@@ -106,8 +143,8 @@ class ProdutoDetalheView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['lista_produto'] = Produto.objects.all().order_by("-id")
-        context['lista_promocao'] = Promocao.objects.all().order_by("-id")
+        context["lista_produto"] = Produto.objects.all().order_by("-id")
+        context["lista_promocao"] = Promocao.objects.all().order_by("-id")
         return context
 
     # def get_context_data(self, **kwargs):
@@ -125,9 +162,9 @@ class AddCarroView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['lista_produto'] = Produto.objects.all().order_by("-id")
-        context['lista_promocao'] = Promocao.objects.all().order_by("-id")
-        produto_id = self.kwargs['pro_id']
+        context["lista_produto"] = Produto.objects.all().order_by("-id")
+        context["lista_promocao"] = Promocao.objects.all().order_by("-id")
+        produto_id = self.kwargs["pro_id"]
         produto_obj = Produto.objects.get(id=produto_id)
         carro_id = self.request.session.get("carro_id", None)
 
@@ -141,12 +178,18 @@ class AddCarroView(TemplateView):
                 carroproduto.subtotal += produto_obj.venda
                 carroproduto.save()
             else:
-                carroproduto = CarroProduto.objects.create(carro=carro_obj, produto=produto_obj,
-                                                           avaliacao=produto_obj.venda, quantidade=1,
-                                                           subtotal=produto_obj.venda)
+                carroproduto = CarroProduto.objects.create(
+                    carro=carro_obj,
+                    produto=produto_obj,
+                    avaliacao=produto_obj.venda,
+                    quantidade=1,
+                    subtotal=produto_obj.venda,
+                )
 
             # Atualize o campo "total" no objeto "Carro"
-            carro_obj.total = sum(item.subtotal for item in carro_obj.carroproduto_set.all())
+            carro_obj.total = sum(
+                item.subtotal for item in carro_obj.carroproduto_set.all()
+            )
             if carro_obj.total < 0:
                 carro_obj.total = 0
 
@@ -154,10 +197,14 @@ class AddCarroView(TemplateView):
 
         else:
             carro_obj = Carro.objects.create(total=produto_obj.venda)
-            self.request.session['carro_id'] = carro_obj.id
-            carroproduto = CarroProduto.objects.create(carro=carro_obj, produto=produto_obj,
-                                                       avaliacao=produto_obj.venda, quantidade=1,
-                                                       subtotal=produto_obj.venda)
+            self.request.session["carro_id"] = carro_obj.id
+            carroproduto = CarroProduto.objects.create(
+                carro=carro_obj,
+                produto=produto_obj,
+                avaliacao=produto_obj.venda,
+                quantidade=1,
+                subtotal=produto_obj.venda,
+            )
             carro_obj.save()
 
         return context
@@ -210,7 +257,7 @@ class MeuCarroView(TemplateView):
             carro = Carro.objects.get(id=carro_id)
         else:
             carro = None
-        context['carro'] = carro
+        context["carro"] = carro
         return context
 
 

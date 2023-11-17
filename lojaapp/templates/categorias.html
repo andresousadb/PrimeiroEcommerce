@@ -92,22 +92,26 @@
 <div class="section">
     <div class="container">
         <div class="row">
+
             <div id="aside" class="col-md-3">
-                <div class="aside">
-                    <h3 class="aside-title">Categorias</h3>
-                    {% for categoria in lista_categorias %}
-                    <div class="checkbox-filter">
-                        <div class="input-checkbox">
-                            <input type="checkbox" id="category-{{ forloop.counter }}" data-category="{{ categoria }}">
-                            <label for="category-{{ forloop.counter }}">
-                                <span></span>
-                                {{ categoria }}
-                            </label>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+    <div class="aside">
+        <h3 class="aside-title">Categorias</h3>
+        {% for categoria in lista_categorias %}
+        <div class="checkbox-filter">
+            <div class="input-checkbox">
+                <input type="checkbox" id="category-{{ forloop.counter }}" data-category="{{ categoria }}"
+                       {% if categoria in categorias_filtradas %}checked{% endif %}>
+                <label for="category-{{ forloop.counter }}" onclick="filterCategoria('{{ categoria }}')">
+                    <span></span>
+                    {{ categoria }}
+                </label>
             </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
             <div id="product-list">
                 <div class="store-filter clearfix">
                     <div id="store" class="col-md-9">
@@ -137,23 +141,28 @@
                         </div>
 
 
-                        <span class="store-qty">
-                    Mostrando 1 - {% if categoria_selecionada %}
-                    <p>Categoria Selecionada: {{ categoria_selecionada }}</p>
-                {% else %}
-                    <p>Nenhuma categoria selecionada</p>
-                {% endif %}
-
-                            </span>
+                        <!--                                             <span class="store-qty">-->
+                        <!--                                                    Mostrando 1 - {% if total_produtos_por_categoria is not None %}  {{ total_produtos_por_categoria }}-->
+                        <!--                                                    {% else %}-->
+                        <!--                                                        <p>Nenhuma categoria selecionada</p>-->
+                        <!--                                                    {% endif %}-->
+                        <!--                                                </span>-->
 
 
-                        <ul class="store-pagination">
-                            <li class="active">1</li>
-                            <li><a href="#">2</a></li>
-                            <li><a href="#">3</a></li>
-                            <li><a href="#">4</a></li>
-                            <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
-                        </ul>
+                                                   <!-- Seção da barra de navegação -->
+                            <ul class="store-pagination">
+                                {% if lista_produtos.has_previous %}
+                                <li><a href="?page=1">&laquo;</a></li>
+                                <li><a href="?page={{ lista_produtos.previous_page_number }}">{{ lista_produtos.previous_page_number }}</a></li>
+                                {% endif %}
+
+                                <li class="active">{{ lista_produtos.number }}</li>
+
+                                {% if lista_produtos.has_next %}
+                                <li><a href="?page={{ lista_produtos.next_page_number }}">{{ lista_produtos.next_page_number }}</a></li>
+                                <li><a href="?page={{ lista_produtos.paginator.num_pages }}">&raquo;</a></li>
+                                {% endif %}
+                            </ul>
                     </div>
                 </div>
             </div>
